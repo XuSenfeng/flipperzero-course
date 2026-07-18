@@ -1,0 +1,26 @@
+# For details & more options, see documentation/AppManifests.md in firmware repo
+
+App(
+    appid="test",  # Must be unique
+    name="App test",  # Displayed in menus
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="test_app",
+    stack_size=2 * 1024,
+    fap_category="Examples",
+    # Optional values
+    # fap_version="0.1",
+    fap_icon="test.png",  # 10x10 1-bit PNG
+    # fap_description="A simple app",
+    # fap_author="J. Doe",
+    # fap_weburl="https://github.com/user/test",
+    fap_icon_assets="images",  # Image assets to compile for this application
+    # Private libraries: compiled together with the app. Sources must live under lib/
+    fap_private_libs=[
+        Lib(
+            name="mymath",  # matches the lib/mymath folder
+            fap_include_paths=["include"],  # add lib/mymath/include to the fap's include path
+            cdefines=["MYMATH_ENABLE_MUL"],  # extra preprocessor define when building this lib
+            # sources defaults to ["*.c*"], which picks up mymath.c at the lib root
+        ),
+    ],
+)
