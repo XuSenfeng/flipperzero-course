@@ -6,8 +6,8 @@
  * UART channels
  */
 typedef enum {
-    FuriHalSerialIdUsart,
-    FuriHalSerialIdLpuart,
+    FuriHalSerialIdUsart, // 通用同步/异步收发器 13=PB6(TX), 14=PB7(RX)
+    FuriHalSerialIdLpuart, // 低功耗异步收发器 15=PC1(TX), 16=PC0(RX)
 
     FuriHalSerialIdMax,
 } FuriHalSerialId;

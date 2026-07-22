@@ -29,6 +29,7 @@ void gpio_scene_usb_uart_dialog_callback(DialogExResult result, void* context) {
 void gpio_scene_usb_uart_on_enter(void* context) {
     GpioApp* app = context;
     if(!scene_usb_uart) {
+        // 第一次进入USB-UART桥接场景时, 初始化USB-UART桥接配置和状态
         scene_usb_uart = malloc(sizeof(SceneUsbUartBridge));
         scene_usb_uart->cfg.vcp_ch = 0;
         scene_usb_uart->cfg.uart_ch = 0;

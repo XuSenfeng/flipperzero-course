@@ -20,11 +20,11 @@ typedef enum {
 } CdcCtrlLine;
 
 typedef struct {
-    void (*tx_ep_callback)(void* context);
-    void (*rx_ep_callback)(void* context);
-    void (*state_callback)(void* context, CdcState state);
-    void (*ctrl_line_callback)(void* context, CdcCtrlLine ctrl_lines);
-    void (*config_callback)(void* context, struct usb_cdc_line_coding* config);
+    void (*tx_ep_callback)(void* context); //一次 USB 发送完成(TX endpoint 空了)
+    void (*rx_ep_callback)(void* context); // USB 收到数据(RX endpoint 有数据)
+    void (*state_callback)(void* context, CdcState state); // USB 连接状态变化
+    void (*ctrl_line_callback)(void* context, CdcCtrlLine ctrl_lines); // 控制线变化(DTR/RTS)
+    void (*config_callback)(void* context, struct usb_cdc_line_coding* config); // 串口参数变化
 } CdcCallbacks;
 
 void furi_hal_cdc_set_callbacks(uint8_t if_num, CdcCallbacks* cb, void* context);

@@ -7,6 +7,7 @@ struct GPIOItems {
     size_t count;
 };
 
+// 记录所有可用的GPIO引脚, 过滤掉调试引脚
 GPIOItems* gpio_items_alloc(void) {
     GPIOItems* items = malloc(sizeof(GPIOItems));
 

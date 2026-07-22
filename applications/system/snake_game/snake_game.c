@@ -16,7 +16,7 @@ typedef struct {
 } Point;
 
 typedef enum {
-    GameStateLife,
+    GameStateLife, // 游戏进行中
 
     // https://melmagazine.com/en-us/story/snake-nokia-6110-oral-history-taneli-armanto
     // Armanto: While testing the early versions of the game, I noticed it was hard
@@ -27,6 +27,8 @@ typedef enum {
     // I implemented a little delay. A few milliseconds of extra time right before
     // the player crashes, during which she can still change the directions. And if
     // she does, the game continues.
+    // 第一次检测到要撞墙时,不立即判定死亡,而是进入 LastChance
+    // 状态并 return(跳过这一步移动)。这就相当于给了玩家额外一个 tick
     GameStateLastChance,
 
     GameStateGameOver,
@@ -92,6 +94,7 @@ const NotificationSequence sequence_eat = {
     NULL,
 };
 
+// 游戏渲染回调函数, 负责绘制游戏画面
 static void snake_game_render_callback(Canvas* const canvas, void* ctx) {
     furi_assert(ctx);
     const SnakeState* snake_state = ctx;
@@ -104,14 +107,16 @@ static void snake_game_render_callback(Canvas* const canvas, void* ctx) {
     // Fruit
     Point f = snake_state->fruit;
     f.x = f.x * 4 + 1;
-    f.y = f.y * 4 + 1;
+    f.y = f.y * 4 + 1; // 微调偏移量,让水果在格子里居中
+    // 画一个圆角矩形边框
     canvas_draw_rframe(canvas, f.x, f.y, 6, 6, 2);
 
     // Snake
     for(uint16_t i = 0; i < snake_state->len; i++) {
         Point p = snake_state->points[i];
         p.x = p.x * 4 + 2;
-        p.y = p.y * 4 + 2;
+        p.y = p.y * 4 + 2; // 微调偏移量,让蛇在格子里居中
+        // 画一个小方块, 代表蛇的身体
         canvas_draw_box(canvas, p.x, p.y, 4, 4);
     }
 
@@ -174,7 +179,7 @@ static Point snake_game_get_new_fruit(SnakeState const* const snake_state) {
     uint16_t buffer[8];
     memset(buffer, 0, sizeof(buffer));
     uint8_t empty = 8 * 16;
-
+    // 记录哪些点已经被蛇占用, 这些点不能生成水果
     for(uint16_t i = 0; i < snake_state->len; i++) {
         Point p = snake_state->points[i];
 
@@ -188,7 +193,8 @@ static Point snake_game_get_new_fruit(SnakeState const* const snake_state) {
         empty--;
     }
     // Bit set if snake use that playing field
-
+    // 生成一个随机数, 这个随机数是空闲点的索引, 然后遍历所有点,
+    // 找到这个索引对应的点, 作为新的水果位置
     uint16_t newFruit = rand() % empty;
 
     // Skip random number of _empty_ fields
@@ -263,6 +269,7 @@ static void snake_game_move_snake(SnakeState* const snake_state, Point const nex
     snake_state->points[0] = next_step;
 }
 
+// 游戏逻辑处理函数, 负责处理游戏的每一步逻辑
 static void
     snake_game_process_game_step(SnakeState* const snake_state, NotificationApp* notification) {
     if(snake_state->state == GameStateGameOver) {
@@ -276,6 +283,7 @@ static void
 
     Point next_step = snake_game_get_next_step(snake_state);
 
+    // 检查是否撞到边框, 如果撞到了, 游戏结束
     bool crush = snake_game_collision_with_frame(next_step);
     if(crush) {
         if(snake_state->state == GameStateLife) {
@@ -292,6 +300,7 @@ static void
         }
     }
 
+    // 检查是否撞到自己的身体, 如果撞到了, 游戏结束
     crush = snake_game_collision_with_tail(snake_state, next_step);
     if(crush) {
         snake_state->state = GameStateGameOver;
@@ -320,6 +329,7 @@ static void
 int32_t snake_game_app(void* p) {
     UNUSED(p);
 
+    // 创建一个消息队列, 用于接收输入事件和定时器事件
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(SnakeEvent));
 
     SnakeState* snake_state = malloc(sizeof(SnakeState));
@@ -331,6 +341,7 @@ int32_t snake_game_app(void* p) {
     view_port_draw_callback_set(view_port, snake_game_render_callback, snake_state);
     view_port_input_callback_set(view_port, snake_game_input_callback, event_queue);
 
+    // 启动一个定时器, 每隔 1/4 秒发送一个 Tick 事件, 用于驱动游戏逻辑更新
     FuriTimer* timer =
         furi_timer_alloc(snake_game_update_timer_callback, FuriTimerTypePeriodic, event_queue);
     furi_timer_start(timer, furi_kernel_get_tick_frequency() / 4);
@@ -346,6 +357,7 @@ int32_t snake_game_app(void* p) {
 
     SnakeEvent event;
     for(bool processing = true; processing;) {
+        // 等待输入事件或定时器事件, 超时为 100 毫秒
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
 
         furi_mutex_acquire(snake_state->mutex, FuriWaitForever);
