@@ -158,6 +158,7 @@ const GpioPinRecord gpio_pins[] = {
 
 const size_t gpio_pins_count = COUNT_OF(gpio_pins);
 
+// 所有的输入引脚定义
 const InputPin input_pins[] = {
     {.gpio = &gpio_button_up, .key = InputKeyUp, .inverted = true, .name = "Up"},
     {.gpio = &gpio_button_down, .key = InputKeyDown, .inverted = true, .name = "Down"},

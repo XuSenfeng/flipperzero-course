@@ -69,6 +69,7 @@ static void line_vcp_cb(VariableItem* item) {
     view_dispatcher_send_custom_event(app->view_dispatcher, GpioUsbUartEventConfigSet);
 }
 
+// 设置 UART 硬件端口
 static void line_port_cb(VariableItem* item) {
     GpioApp* app = variable_item_get_context(item);
     furi_assert(app);
@@ -85,6 +86,7 @@ static void line_port_cb(VariableItem* item) {
     view_dispatcher_send_custom_event(app->view_dispatcher, GpioUsbUartEventConfigSet);
 }
 
+// 设置 RS485 的收发方向控制引脚, 0 不启用, 4 启用 PA4, 实际使用的需要外接电路
 static void line_software_de_re_cb(VariableItem* item) {
     GpioApp* app = variable_item_get_context(item);
     furi_assert(app);
@@ -96,6 +98,8 @@ static void line_software_de_re_cb(VariableItem* item) {
     view_dispatcher_send_custom_event(app->view_dispatcher, GpioUsbUartEventConfigSet);
 }
 
+// RTS/DTR Pins 选择硬件流控(flow control)使用哪组 GPIO 引脚
+// 流控(flow control)是防止数据丢失的"刹车"机制。 当接收方处理不过来时,通过额外的信号线告诉发送方"先停一下"
 static void line_flow_cb(VariableItem* item) {
     GpioApp* app = variable_item_get_context(item);
     furi_assert(app);

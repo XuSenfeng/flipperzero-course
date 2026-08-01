@@ -172,17 +172,24 @@ static int32_t usb_uart_worker(void* context) {
 
     memcpy(&usb_uart->cfg, &usb_uart->cfg_new, sizeof(UsbUartConfig));
 
+    // 拿到 CLI 的虚拟串口
+    // Flipper 默认把 USB 虚拟串口给命令行(CLI)用。桥接功能要抢占这个 USB 串口
     usb_uart->cli_vcp = furi_record_open(RECORD_CLI_VCP);
 
+    // 接受数据的缓冲区
     usb_uart->rx_stream = furi_stream_buffer_alloc(USB_UART_RX_BUF_SIZE, 1);
 
     usb_uart->tx_sem = furi_semaphore_alloc(1, 1);
     usb_uart->usb_mutex = furi_mutex_alloc(FuriMutexTypeNormal);
 
+    // 用于发送数据的线程， 负责 USB→UART(电脑发来的数据转给设备)
+    // 本线程(worker): 负责 UART→USB(设备发来的数据转给电脑)
     usb_uart->tx_thread =
         furi_thread_alloc_ex("UsbUartTxWorker", 768, usb_uart_tx_thread, usb_uart);
 
+    // 初始化 USB 虚拟串口
     usb_uart_vcp_init(usb_uart, usb_uart->cfg.vcp_ch);
+    // 初始化物理串口
     usb_uart_serial_init(usb_uart, usb_uart->cfg.uart_ch);
     usb_uart_set_baudrate(usb_uart, usb_uart->cfg.baudrate);
     if(usb_uart->cfg.flow_pins != 0) {
@@ -313,6 +320,7 @@ static int32_t usb_uart_worker(void* context) {
     return 0;
 }
 
+// 把电脑发来的数据转给设备
 static int32_t usb_uart_tx_thread(void* context) {
     UsbUartBridge* usb_uart = (UsbUartBridge*)context;
 

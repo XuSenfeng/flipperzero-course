@@ -18,6 +18,7 @@ static bool gpio_test_process_left(GpioTest* gpio_test);
 static bool gpio_test_process_right(GpioTest* gpio_test);
 static bool gpio_test_process_ok(GpioTest* gpio_test, InputEvent* event);
 
+// 绘制回调函数
 static void gpio_test_draw_callback(Canvas* canvas, void* _model) {
     GpioTestModel* model = _model;
     canvas_set_font(canvas, FontPrimary);
@@ -65,6 +66,7 @@ static bool gpio_test_process_left(GpioTest* gpio_test) {
     return true;
 }
 
+// 处理按键右, 切换到下一个GPIO引脚, 返回true触发界面刷新
 static bool gpio_test_process_right(GpioTest* gpio_test) {
     with_view_model(
         gpio_test->view,
@@ -87,19 +89,24 @@ static bool gpio_test_process_ok(GpioTest* gpio_test, InputEvent* event) {
         {
             if(event->type == InputTypePress) {
                 if(model->pin_idx < gpio_items_get_count(model->gpio_items)) {
+                    // 如果当前选择的引脚索引小于GPIO引脚总数, 则设置该引脚为高电平
                     gpio_items_set_pin(model->gpio_items, model->pin_idx, true);
                 } else {
+                    // 如果当前选择的引脚索引大于等于GPIO引脚总数, 则设置所有引脚为高电平
                     gpio_items_set_all_pins(model->gpio_items, true);
                 }
                 consumed = true;
             } else if(event->type == InputTypeRelease) {
                 if(model->pin_idx < gpio_items_get_count(model->gpio_items)) {
+                    // 如果当前选择的引脚索引小于GPIO引脚总数, 则设置该引脚为低电平
                     gpio_items_set_pin(model->gpio_items, model->pin_idx, false);
                 } else {
+                    // 如果当前选择的引脚索引大于等于GPIO引脚总数, 则设置所有引脚为低电平
                     gpio_items_set_all_pins(model->gpio_items, false);
                 }
                 consumed = true;
             }
+            // 如果设置了回调函数, 则调用回调函数通知外部
             gpio_test->callback(event->type, gpio_test->context);
         },
         true);

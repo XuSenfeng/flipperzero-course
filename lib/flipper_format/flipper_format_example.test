@@ -1,0 +1,6 @@
+Version: 1
+# Example file for flipper_format
+Name: Hello Flipper
+Value: 42
+Enabled: true false
+Hex: DE AD BE EF

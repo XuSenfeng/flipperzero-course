@@ -24,12 +24,14 @@ static void gpio_app_tick_event_callback(void* context) {
 GpioApp* gpio_app_alloc(void) {
     GpioApp* app = malloc(sizeof(GpioApp));
 
+    // 关闭扩展模块支持，防止占用串口
     app->expansion = furi_record_open(RECORD_EXPANSION);
     expansion_disable(app->expansion);
 
     app->gui = furi_record_open(RECORD_GUI);
     app->gpio_items = gpio_items_alloc();
 
+    // 申请电源服务, 防止在使用GPIO时进入休眠
     app->power = furi_record_open(RECORD_POWER);
 
     app->view_dispatcher = view_dispatcher_alloc();
