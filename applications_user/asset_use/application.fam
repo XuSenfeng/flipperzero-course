@@ -1,0 +1,18 @@
+# For details & more options, see documentation/AppManifests.md in firmware repo
+
+App(
+    appid="asset_use",  # Must be unique
+    name="Asset Use",  # Displayed in menus
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="asset_use_app",
+    stack_size=4 * 1024,
+    fap_category="Examples",
+    # Optional values
+    # fap_version="0.1",
+    fap_icon="asset_use.png",  # 10x10 1-bit PNG
+    fap_description="Demo for icon, animation, and file assets",
+    # fap_author="Jiao",
+    # fap_weburl="https://github.com/user/asset_use",
+    fap_icon_assets="images",  # Image assets to compile for this application
+    fap_file_assets="files",  # Extra files unpacked to APP_ASSETS_PATH(...)
+)
